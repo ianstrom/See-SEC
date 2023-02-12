@@ -29,6 +29,7 @@ body {
     border-radius: 10px;
     margin-bottom: 30px;
     margin: auto;
+    text-align: center;
 }
 
 #search-Co-Person {
@@ -44,5 +45,6 @@ body {
     height: 30vh;
     padding-top:  30px;
     border-radius: 10px;
-    margin: auto
+    margin: auto;
+    text-align: center;
 }
