@@ -4,20 +4,19 @@ let stockChart = document.querySelector('#chart');
 let displaySearch = document.querySelector('#displaySearch');
 let defaultCompanyDisplay = ['FB', 'AMZN', 'AAPL', 'NFLX', 'GOOG'];
 let companyCik;
+let companyTicker;
 let insiderCik;
 let transactionDate;
+let startDate;
+let endDate;
+let stockClosingPrices = []
 
 // const api = 'whatever our api is. need to make secret'
 
 
-// fetch(`https://api.aletheiaapi.com/LatestTransactions?issuer=1800&top=5&key=${keys.ianKey}`)
-// .then(data => data.json())
-// .then(data => console.log(data))
-
-
 
 defaultCompanyDisplay.forEach(company => {
-    fetch(`https://api.aletheiaapi.com/GetEntity?id=${company}&key=${keys.ianKey}`)
+    fetch(`https://api.aletheiaapi.com/GetEntity?id=${company}&key=${keys.aletheiaKey}`)
         .then(data => data.json())
         .then(data => {
             console.log(data)
@@ -32,13 +31,14 @@ defaultCompanyDisplay.forEach(company => {
 function renderPeopleInCompany(data, clicked) {
     clicked.addEventListener('click', () => {
         companyCik = data.Cik
-        console.log(companyCik)
-        fetch(`https://api.aletheiaapi.com/AffiliatedOwners?id=${companyCik}&key=${keys.ianKey}`)
-        .then(people => people.json())
-        .then(people => {
-            renderPeople(people)
-            console.log(people)
-        })
+        companyTicker = data.TradingSymbol
+        // console.log(companyCik)
+        fetch(`https://api.aletheiaapi.com/AffiliatedOwners?id=${companyCik}&key=${keys.aletheiaKey}`)
+            .then(people => people.json())
+            .then(people => {
+                renderPeople(people)
+                // console.log(people)
+            })
     })
 }
 
@@ -56,41 +56,60 @@ function renderPeople(people) {
 }
 
 function renderInsiderInfo(person, clicked) {
-        clicked.addEventListener('click', () => {
-            insiderCik = person.Cik
-            while(displaySearch.firstChild) {
-                displaySearch.removeChild(displaySearch.firstChild)
-            }
-            console.log(insiderCik)
-            renderInsider()
-        })
-}
-
-function renderInsider(){
-    fetch(`https://api.aletheiaapi.com/LatestTransactions?issuer=${companyCik}&owner=${insiderCik}&securitytype=0&top=10&key=${keys.ianKey}`)
-    .then(data => data.json())
-    .then(data => {
-        console.log(data)
-        renderTransactions(data)
+    clicked.addEventListener('click', () => {
+        insiderCik = person.Cik
+        while (displaySearch.firstChild) {
+            displaySearch.removeChild(displaySearch.firstChild)
+        }
+        // console.log(insiderCik)
+        renderInsider()
     })
 }
 
+function renderInsider() {
+    fetch(`https://api.aletheiaapi.com/LatestTransactions?issuer=${companyCik}&owner=${insiderCik}&securitytype=0&top=10&key=${keys.aletheiaKey}`)
+        .then(data => data.json())
+        .then(data => {
+            startDate = data[data.length - 1].TransactionDate.slice(0, 10)
+            endDate = data[0].TransactionDate.slice(0, 10)
+            console.log(startDate, endDate)
+            renderTransactions(data)
+        })
+}
 
-function renderTransactions(data){
+
+function renderTransactions(data) {
     data.forEach(transaction => {
         let transacationContainer = document.createElement('div')
         let transactionQuantityContainer = document.createElement('div')
         let transactionQuantityOwnedContainer = document.createElement('div')
         let dateContainer = document.createElement('div')
+        transactionDate = transaction.TransactionDate.slice(0, 10)
         transactionQuantityContainer.textContent = `Shares transferred: ${transaction.Quantity}`
         transactionQuantityOwnedContainer.textContent = `Shares after transaction: ${transaction.QuantityOwnedFollowingTransaction}`
-        dateContainer.textContent = `Transaction date ${transaction.TransactionDate}`
+        dateContainer.textContent = `Transaction date ${transactionDate}`
         transacationContainer.append(transactionQuantityContainer, transactionQuantityOwnedContainer, dateContainer)
         displaySearch.append(transacationContainer)
+        console.log(transactionDate)
     })
+    getStockData()
 }
 
+function getStockData() {
+    fetch(`https://api.polygon.io/v2/aggs/ticker/${companyTicker}/range/1/hour/${startDate}/${endDate}?adjusted=true&sort=asc&limit=120&apiKey=${keys.aggregateKey}`)
+        .then(data => data.json())
+        .then(data => {
+            console.log(data)
+            getStockClosingValues(data)
+        })
+}
 
+function getStockClosingValues(data) {
+    data.results.forEach(closingPrice => {
+        stockClosingPrices.push(closingPrice.c)
+    })
+    console.log(stockClosingPrices)
+}
 
 searchStock.addEventListener('submit', (e) => {
     e.preventDefault();
