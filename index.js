@@ -1,19 +1,77 @@
-let searchCoP = document.querySelector('#searchCoP')
-let searchStock = document.querySelector("#search_stock")
-let stockChart = document.querySelector('#chart')
-let displaySearch = document.querySelector('#displaySearch')
+let searchCoP = document.querySelector('#searchCoP');
+let searchStock = document.querySelector("#search_stock");
+let stockChart = document.querySelector('#chart');
+let displaySearch = document.querySelector('#displaySearch');
+let defaultCompanytDisplay = ['FB', 'AMZN', 'AAPL', 'NFLX', 'GOOG'];
+let companyCik;
+let insiderCik;
 
 // const api = 'whatever our api is. need to make secret'
 
-fetch(`https://api.aletheiaapi.com/LatestTransactions?issuer=1800&top=5&key=${keys.ianKey}`)
-.then(data => data.json())
-.then(data => console.log(data))
+
+// fetch(`https://api.aletheiaapi.com/LatestTransactions?issuer=1800&top=5&key=${keys.ianKey}`)
+// .then(data => data.json())
+// .then(data => console.log(data))
 
 
 
+defaultCompanytDisplay.forEach(company => {
+    fetch(`https://api.aletheiaapi.com/GetEntity?id=${company}&key=${keys.ianKey}`)
+        .then(data => data.json())
+        .then(data => {
+            console.log(data)
+            let companyContainer = document.createElement('div')
+            companyContainer.className = 'companies'
+            companyContainer.textContent = data.Name
+            displaySearch.append(companyContainer)
+            renderPeopleInCompany(data, companyContainer)
+        })
+})
+
+function renderPeopleInCompany(data, clicked) {
+    clicked.addEventListener('click', () => {
+        companyCik = data.Cik
+        console.log(companyCik)
+        fetch(`https://api.aletheiaapi.com/AffiliatedOwners?id=${companyCik}&key=${keys.ianKey}`)
+            .then(people => people.json())
+            .then(people => {
+                renderPeople(people)
+                console.log(people)
+                // console.log(people[0].Cik)
+            })
+    })
+}
+
+// fetch(`https://api.aletheiaapi.com/LatestTransactions?issuer=${companyCik}&owner=${insiderCik}securitytype=0&transactiontype=13&top=10&key=${keys.ianKey}`)
 
 
-    searchStock.addEventListener('submit', (e) => {
+
+function renderPeople(people) {
+    while (displaySearch.firstChild) {
+        displaySearch.removeChild(displaySearch.firstChild)
+    }
+    people.forEach(person => {
+        let insider = document.createElement('div')
+        insider.className = 'insider'
+        insider.textContent = person.Name
+        displaySearch.append(insider)
+        renderInsiderInfo(people, insider)
+    })
+}
+
+function renderInsiderInfo(people, clicked) {
+    people.forEach(person => {
+        clicked.addEventListener('click', () => {
+            insiderCik = person.Cik
+            while(displaySearch.firstChild) {
+                displaySearch.removeChild(displaySearch.firstChild)
+            }
+            // console.log(insiderCik)
+        })
+    })
+}
+
+searchStock.addEventListener('submit', (e) => {
     e.preventDefault();
     console.log(e.target.ticker_company.value)
 
