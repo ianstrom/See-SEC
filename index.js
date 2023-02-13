@@ -2,9 +2,10 @@ let searchCoP = document.querySelector('#searchCoP');
 let searchStock = document.querySelector("#search_stock");
 let stockChart = document.querySelector('#chart');
 let displaySearch = document.querySelector('#displaySearch');
-let defaultCompanytDisplay = ['FB', 'AMZN', 'AAPL', 'NFLX', 'GOOG'];
+let defaultCompanyDisplay = ['FB', 'AMZN', 'AAPL', 'NFLX', 'GOOG'];
 let companyCik;
 let insiderCik;
+let transactionDate;
 
 // const api = 'whatever our api is. need to make secret'
 
@@ -15,7 +16,7 @@ let insiderCik;
 
 
 
-defaultCompanytDisplay.forEach(company => {
+defaultCompanyDisplay.forEach(company => {
     fetch(`https://api.aletheiaapi.com/GetEntity?id=${company}&key=${keys.ianKey}`)
         .then(data => data.json())
         .then(data => {
@@ -33,18 +34,13 @@ function renderPeopleInCompany(data, clicked) {
         companyCik = data.Cik
         console.log(companyCik)
         fetch(`https://api.aletheiaapi.com/AffiliatedOwners?id=${companyCik}&key=${keys.ianKey}`)
-            .then(people => people.json())
-            .then(people => {
-                renderPeople(people)
-                console.log(people)
-                // console.log(people[0].Cik)
-            })
+        .then(people => people.json())
+        .then(people => {
+            renderPeople(people)
+            console.log(people)
+        })
     })
 }
-
-// fetch(`https://api.aletheiaapi.com/LatestTransactions?issuer=${companyCik}&owner=${insiderCik}securitytype=0&transactiontype=13&top=10&key=${keys.ianKey}`)
-
-
 
 function renderPeople(people) {
     while (displaySearch.firstChild) {
@@ -55,21 +51,46 @@ function renderPeople(people) {
         insider.className = 'insider'
         insider.textContent = person.Name
         displaySearch.append(insider)
-        renderInsiderInfo(people, insider)
+        renderInsiderInfo(person, insider)
     })
 }
 
-function renderInsiderInfo(people, clicked) {
-    people.forEach(person => {
+function renderInsiderInfo(person, clicked) {
         clicked.addEventListener('click', () => {
             insiderCik = person.Cik
             while(displaySearch.firstChild) {
                 displaySearch.removeChild(displaySearch.firstChild)
             }
-            // console.log(insiderCik)
+            console.log(insiderCik)
+            renderInsider()
         })
+}
+
+function renderInsider(){
+    fetch(`https://api.aletheiaapi.com/LatestTransactions?issuer=${companyCik}&owner=${insiderCik}&securitytype=0&top=10&key=${keys.ianKey}`)
+    .then(data => data.json())
+    .then(data => {
+        console.log(data)
+        renderTransactions(data)
     })
 }
+
+
+function renderTransactions(data){
+    data.forEach(transaction => {
+        let transacationContainer = document.createElement('div')
+        let transactionQuantityContainer = document.createElement('div')
+        let transactionQuantityOwnedContainer = document.createElement('div')
+        let dateContainer = document.createElement('div')
+        transactionQuantityContainer.textContent = `Shares transferred: ${transaction.Quantity}`
+        transactionQuantityOwnedContainer.textContent = `Shares after transaction: ${transaction.QuantityOwnedFollowingTransaction}`
+        dateContainer.textContent = `Transaction date ${transaction.TransactionDate}`
+        transacationContainer.append(transactionQuantityContainer, transactionQuantityOwnedContainer, dateContainer)
+        displaySearch.append(transacationContainer)
+    })
+}
+
+
 
 searchStock.addEventListener('submit', (e) => {
     e.preventDefault();
