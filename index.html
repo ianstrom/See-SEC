@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <script type='text/javascript' src='config.js'></script>
+    <script defer type='text/javascript' src='config.js'></script>
     <script defer src="index.js"></script>
     <script type="text/javascript" src = "https://www.gstatic.com/charts/loader.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,8 +18,8 @@
         <button></button>           Going to be buttons for date, time, maybe some preferences button with what youd like to see on the stock chart
         <button></button>
         <button></button> -->
-        <form id="searchStock">
-            <input name="ticker_company" placeholder="Enter Company or Ticker">
+        <form>
+            <input id="searchStock" name="ticker_company" placeholder="Enter Ticker">
         </form>
     </div>
 
@@ -37,8 +37,8 @@
         <button></button>          More buttons, idk what theyre fuckin for yet but we'll probably need them.
         <button></button>
         <button></button> -->
-        <form id="searchCo">
-            <input type="text" name="company" placeholder="Enter Company Cik Number">
+        <form class="searchCoForm">
+            <input id="searchCo" type="text" name="company" placeholder="Enter Company Cik Number">
         </form>
 
     </div>
