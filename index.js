@@ -6,21 +6,25 @@ let stockChart = document.querySelector('#chart');
 let displaySearch = document.querySelector('#displaySearch');
 let defaultCompanyDisplay = ['FB', 'AMZN', 'AAPL', 'NFLX', 'GOOG'];
 let companyCik;
-let companyTicker;
+let companyTicker = 'SPY';
 let insiderCik;
 let transactionDate;
 let startDate;
 let endDate;
+let transactionDateArray = []
 let stockClosingPrices = []
 let chartData = [["Date", "Closing Price"]]
 let incrementDate;
 let currentDate
 let oneYearAgo
 let timespan;
-let date
-let month
-let day
-let year
+let startDate1
+let transactionQuanitityArray = []
+let insiderChartData = []
+// let date
+// let month
+// let day
+// let year
 
 // const api = 'whatever our api is. need to make secret'
 
@@ -32,7 +36,7 @@ function displayCompanies() {
         fetch(`https://api.aletheiaapi.com/GetEntity?id=${company}&key=${keys.aletheiaKey}`)
             .then(data => data.json())
             .then(data => {
-                console.log(data)
+                // console.log(data)
                 let companyContainer = document.createElement('div')
                 companyContainer.className = 'companies'
                 companyContainer.textContent = data.Name
@@ -88,47 +92,50 @@ function renderInsider() {
         .then(data => {
             startDate = data[data.length - 1].TransactionDate.slice(0, 10)
             endDate = data[0].TransactionDate.slice(0, 10)
-            console.log(startDate, endDate)
             renderTransactions(data)
         })
-        .catch(error => console.log(error))
+        .catch(error => alert('No Transaction Data Available'))
 }
 
 
 function renderTransactions(data) {
     data.forEach(transaction => {
-        let transacationContainer = document.createElement('div')
+        let transactionContainer = document.createElement('div')
         let transactionQuantityContainer = document.createElement('div')
         let transactionQuantityOwnedContainer = document.createElement('div')
         let dateContainer = document.createElement('div')
         transactionDate = transaction.TransactionDate.slice(0, 10)
+        transactionDateArray.push(transactionDate)
+        // console.log(new Date(transactionDateArray[0]).getMonth())
+        transactionQuanitityArray.push(transaction.Quantity)
+        // console.log(transactionQuanitityArray)
         transactionQuantityContainer.textContent = `Shares transferred: ${transaction.Quantity}`
         transactionQuantityOwnedContainer.textContent = `Shares after transaction: ${transaction.QuantityOwnedFollowingTransaction}`
         dateContainer.textContent = `Transaction date ${transactionDate}`
-        transacationContainer.append(transactionQuantityContainer, transactionQuantityOwnedContainer, dateContainer)
-        displaySearch.append(transacationContainer)
+        transactionContainer.append(transactionQuantityContainer, transactionQuantityOwnedContainer, dateContainer)
+        displaySearch.append(transactionContainer)
     })
-    getStockData()
+    // getStockData()
     getInsiderStockData()
 }
 
-function getStockData() {
-    fetch(`https://api.polygon.io/v2/aggs/ticker/${companyTicker}/range/1/hour/${startDate}/${endDate}?adjusted=true&sort=asc&limit=50000&apiKey=${keys.aggregateKey}`)
-        .then(data => data.json())
-        .then(data => {
-            console.log(data)
-            getStockClosingValues(data)
-        })
-        .catch(error => console.log(error))
-    }
+// function getStockData() {
+//     fetch(`https://api.polygon.io/v2/aggs/ticker/${companyTicker}/range/1/hour/${startDate}/${endDate}?adjusted=true&sort=asc&limit=50000&apiKey=${keys.aggregateKey}`)
+//         .then(data => data.json())
+//         .then(data => {
+//             console.log(data)
+//             getStockClosingValues(data)
+//         })
+//         .catch(error => alert('No Stock Data Available'))
+//     }
 
-function getStockClosingValues(data) {
-    console.log(data)
-    data.results.forEach(closingPrice => {
-        stockClosingPrices.push(closingPrice.c)
-    })
-    console.log(stockClosingPrices)
-}
+// function getStockClosingValues(data) {
+//     console.log(data)
+//     data.results.forEach(closingPrice => {
+//         stockClosingPrices.push(closingPrice.c)
+//     })
+//     // console.log(stockClosingPrices)
+// }
 
 
 
@@ -136,7 +143,7 @@ searchCo.addEventListener('submit', (e) => {
     e.preventDefault();
 
     companyCik = e.target.company.value
-    console.log(companyCik)
+    // console.log(companyCik)
 
     getCommonFinancials(companyCik)
 
@@ -154,7 +161,7 @@ function renderCommonFinancials(data) {
         displaySearch.removeChild(displaySearch.firstChild)
     }
 
-    console.log(data)
+    // console.log(data)
 
     let showInsider = document.createElement('button')
     let assets = document.createElement('div')
@@ -183,7 +190,7 @@ function renderCommonFinancials(data) {
 function drawChart() {
     let data = google.visualization.arrayToDataTable(chartData);
     let options = {
-        title: "Mock Chart Title",
+        title: `${companyTicker}`,
         curveType: "function",
         legend: { position: "bottom" }
     }
@@ -209,12 +216,12 @@ function getStock() {
 
     let currentDate = `${year}-${month}-${day}`
     let oneYearAgo = `${whatIsAYearAgo}-${month}-${day}`
-    let currentDate1 = new Date(currentDate)
-    let oneYearAgo1 = new Date(oneYearAgo)
+    // let currentDate1 = new Date(currentDate)
+    // let oneYearAgo1 = new Date(oneYearAgo)
 
-    getWindowTimeSpan(currentDate1, oneYearAgo1)
+    // getWindowTimeSpan(currentDate1, oneYearAgo1)
 
-    fetch(`https://api.polygon.io/v2/aggs/ticker/SPY/range/1/week/${oneYearAgo}/${currentDate}?adjusted=true&sort=asc&limit=50000&apiKey=${keys.aggregateKey}`)
+    fetch(`https://api.polygon.io/v2/aggs/ticker/${companyTicker}/range/1/week/${oneYearAgo}/${currentDate}?adjusted=true&sort=asc&limit=50000&apiKey=${keys.aggregateKey}`)
         .then(data => data.json())
         .then(data => data.results.forEach(week => {
             oneYearAgo = new Date(oneYearAgo)
@@ -227,7 +234,7 @@ getStock()
 
 function populateChartData(week, date) {
     let chartDataNestedArray = []
-    let newDate = decideIncrement(date)
+    let newDate = addOneWeek(date)
     chartDataNestedArray.push(newDate)
     chartDataNestedArray.push(week.c)
     chartData.push(chartDataNestedArray)
@@ -248,12 +255,12 @@ function addOneWeek(date) {
     }
 
     date = `${year}-${month}-${day}`
-    return date;
+    return date
 }
 
 
 function drawChartForInsider() {
-    while (stockChart.firstChild){
+    while (stockChart.firstChild) {
         stockChart.removeChild(stockChart.firstChild)
     }
     let data = new google.visualization.DataTable()
@@ -261,15 +268,44 @@ function drawChartForInsider() {
     data.addColumn("number", "Closing Price")
     data.addColumn({ type: "string", role: "annotation" })
     data.addColumn({ type: "string", role: "annotationText" })
-    data.addRows(array2)
+    data.addRows(insiderChartData)
     let options = {
-        title: "Mock Chart Title",
+        title: `${companyTicker}`,
         curveType: "function",
         legend: { position: "bottom" },
         animation: {
             "startup": true,
             "duration": 1000,
             "easing": "linear"
+        },
+        annotations: {
+            boxStyle: {
+                // Color of the box outline.
+                stroke: '#888',
+                // Thickness of the box outline.
+                strokeWidth: 1,
+                // x-radius of the corner curvature.
+                rx: 10,
+                // y-radius of the corner curvature.
+                ry: 10,
+                // Attributes for linear gradient fill.
+                gradient: {
+                    // Start color for gradient.
+                    color1: '#FBF6A7',
+                    // Finish color for gradient.
+                    color2: '#33B679',
+                    // Where on the boundary to start and
+                    // end the color1/color2 gradient,
+                    // relative to the upper left corner
+                    // of the boundary.
+                    x1: '0%', y1: '0%',
+                    x2: '100%', y2: '100%',
+                    // If true, the boundary for x1,
+                    // y1, x2, and y2 is the box. If
+                    // false, it's the entire chart.
+                    useObjectBoundingBoxUnits: true
+                }
+            }
         }
     }
     let chart = new google.visualization.LineChart(document.getElementById("chart"))
@@ -278,29 +314,30 @@ function drawChartForInsider() {
 
 function getInsiderStockData() {
     let endDate1 = new Date(endDate)
-    let startDate1 = new Date(startDate)
+    startDate1 = new Date(startDate)
     getWindowTimeSpan(endDate1, startDate1)
+    // console.log(startDate1)
     fetch(`https://api.polygon.io/v2/aggs/ticker/${companyTicker}/range/1/${timespan}/${startDate}/${endDate}?adjusted=true&sort=asc&limit=50000&apiKey=${keys.aggregateKey}`)
         .then(data => data.json())
         .then(data => {
-            console.log(data)
+            // console.log(data)
             data.results.forEach(res => {
-        })})
+                populateInsiderChartData(res)
+                decideIncrement(startDate1)
+                drawChartForInsider()
+            })
+        })
 }
 
 function getWindowTimeSpan(currentDate, date) {
     if (currentDate.getFullYear() - date.getFullYear() >= 1) {
         timespan = 'month'
-        console.log('apps1')
     } else if (currentDate.getMonth() - date.getMonth() > 2 && currentDate.getMonth() - date.getMonth() < 12) {
         timespan = 'week'
-        console.log('apps2')
     } else if (currentDate.getMonth() - date.getMonth() < 2 && currentDate.getDate() - date.getDate() > 7) {
         timespan = 'day'
-        console.log('apps3')
     } else if (currentDate.getDate() - date.getDate() <= 7) {
         timespan = 'hour'
-        console.log('apps4')
     }
 }
 
@@ -319,7 +356,7 @@ function addOneMonth(date) {
     }
 
     date = `${year}-${month}-${day}`
-    return date;
+    return date
 }
 
 function addOneDay(date) {
@@ -337,15 +374,94 @@ function addOneDay(date) {
     }
 
     date = `${year}-${month}-${day}`
-    return date;
+    return date
 }
 
 function decideIncrement(date) {
     if (timespan === 'month') {
         addOneMonth(date)
-    } else if(timespan === 'week') {
+    } else if (timespan === 'week') {
         addOneWeek(date)
-    } else if(timespan === 'day') {
+    } else if (timespan === 'day') {
         addOneDay(date)
     }
 }
+
+function decideComparison() {
+    if (timespan === 'month') {
+        return compareMonths()
+    } else if (timespan === 'week') {
+        return compareWeeks()
+    } else if (timespan === 'day') {
+        return compareDays()
+    } else if (timespan === 'hour') {
+        return compareDays()
+    }
+    transactionDateArray.shift()
+    transactionQuanitityArray.shift()
+}
+
+function compareMonths() {
+    if (startDate1.getMonth() === new Date(transactionDateArray[0]).getMonth()) {
+        transactionDateArray.shift();
+        return (transactionQuanitityArray[0]).toString()
+    } else {
+        return ''
+    }
+}
+
+function compareWeeks() {
+    if (startDate1.getDate() - new Date(transactionDateArray[0]).getDate() <= 7 && startDate1.getMonth() === new Date(transactionDateArray[0]).getMonth()) {
+        transactionDateArray.shift()
+        return (transactionQuanitityArray[0]).toString()
+    } else {
+        return ''
+    }
+}
+
+function compareDays() {
+    if (startDate1 === new Date(transactionDateArray[0])) {
+        transactionDateArray.shift()
+        return (transactionQuanitityArray[0]).toString()
+    } else {
+        return ''
+    }
+}
+
+function populateInsiderChartData(res) {
+    let insiderChartDataNestedArray = []
+    let newDate = formatDate(startDate1)
+    insiderChartDataNestedArray.push(newDate)
+    insiderChartDataNestedArray.push(res.c)
+    insiderChartDataNestedArray.push(".")
+    insiderChartDataNestedArray.push(decideComparison())
+    // console.log(decideComparison())
+    // console.log(insiderChartDataNestedArray)
+    insiderChartData.push(insiderChartDataNestedArray)
+}
+
+function formatDate(date3) {
+    let fuckingDate = new Date(date3);
+    let year = fuckingDate.getFullYear()
+    let month = parseInt((fuckingDate.getMonth()) + 1).toString()
+    let day = fuckingDate.getDate()
+
+    if (month.length === 1) {
+        month = '0' + month
+    }
+
+    if (day.length === 1) {
+        day = '0' + day
+    }
+
+    let currentDate = `${year}-${month}-${day}`
+    return currentDate;
+}
+
+
+searchStock.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    companyTicker = e.target.ticker_company.value
+    getStock()
+}) 
