@@ -192,7 +192,15 @@ function drawChart() {
     let options = {
         title: `${companyTicker}`,
         curveType: "function",
-        legend: { position: "bottom" }
+        legend: { position: "in" },
+        animation: {
+            "startup": true,
+            "duration": 1000,
+            "easing": "linear"
+        },
+        series: {
+            0: {color: "#2BC5EB"}
+        }
     }
     let chart = new google.visualization.LineChart(document.getElementById("chart"))
     chart.draw(data, options)
@@ -272,11 +280,14 @@ function drawChartForInsider() {
     let options = {
         title: `${companyTicker}`,
         curveType: "function",
-        legend: { position: "bottom" },
+        legend: { position: "in" },
         animation: {
             "startup": true,
             "duration": 1000,
             "easing": "linear"
+        },
+        series: {
+            0: {color: "#2BC5EB"}
         },
         annotations: {
             boxStyle: {
