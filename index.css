@@ -15,12 +15,12 @@ body {
     text-align: center;
     margin-top: 5vh;
     margin-bottom: 5vh;
-    background-color: rgba(255,255,255, 0.1);
-	color: white;
-	border-color: white;
-	padding: 5px;
-	font: inherit;
-	outline: inherit;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: white;
+    padding: 5px;
+    font: inherit;
+    outline: inherit;
     margin-top: 5vh;
     margin-left: 5vh;
 }
@@ -31,7 +31,7 @@ body {
 
 #search_stock {
     width: 30vh;
-    margin:auto;
+    margin: auto;
 }
 
 #chart {
@@ -54,22 +54,22 @@ body {
 
 #searchCo {
     width: 20vh;
-    background: rgba(255,255,255, 0.1);
-	color: white;
-	border-color: white;
-	padding: 5px;
-	font: inherit;
-	outline: inherit;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: white;
+    padding: 5px;
+    font: inherit;
+    outline: inherit;
     margin-top: 5vh;
 }
 
 .searchCoForm {
     width: 20vh;
-	color: white;
-	border-color: white;
-	padding: 5px;
-	font: inherit;
-	outline: inherit;
+    color: white;
+    border-color: white;
+    padding: 5px;
+    font: inherit;
+    outline: inherit;
     margin-top: 5vh;
 }
 
@@ -79,7 +79,7 @@ body {
 
 #displaySearch {
     height: flex;
-    padding-top:  30px;
+    padding-top: 30px;
     border-radius: 10px;
     margin: auto;
     display: flex;
@@ -91,11 +91,11 @@ body {
 
 #insider {
     background: none;
-	color: white;
-	border-color: white;
-	padding: 5;
-	font: inherit;
-	cursor: pointer;
+    color: white;
+    border-color: white;
+    padding: 5;
+    font: inherit;
+    cursor: pointer;
     border-radius: 5px;
     margin-top: 10px;
 }
@@ -105,18 +105,47 @@ body {
     justify-content: center;
 }
 
-.insiderContainer {
-    flex-direction: column;
-    color: white;
+.infoContainer, .insiderContainer {
+    position: relative;
+    border: none;
+    color: #FFFFFF;
+    padding: 20px;
     text-align: center;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
-.infoContainer {
-    color: white;
-    transition: all .2s ease-in-out;
-    margin: 5vh;
-    display: flex;
-    flex-direction: row-reverse;
+.companyInfoContainer {
+    position: relative;
+    border: none;
+    color: #FFFFFF;
+    padding: 20px;
+    text-align: center;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.infoContainer:after, .insiderContainer:after {
+    content: "";
+    background-color: #FFFFFF;
+    border-radius: 5px;
+    display: block;
+    position: absolute;
+    padding-top: 300%;
+    padding-left: 350%;
+    margin-left: -40px !important;
+    margin-top: -120%;
+    opacity: 0;
+    transition: all 0.8s
+}
+
+.infoContainer:active:after, .insiderContainer:active:after {
+    padding: 0;
+    margin: 0;
+    opacity: 1;
+    transition: 0s;
 }
 
 .infoContainer:hover {
