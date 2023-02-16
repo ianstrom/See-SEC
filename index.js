@@ -213,7 +213,6 @@ function drawChart() {
             keepInBounds: true
         },
         curveType: "function",
-<<<<<<< HEAD
         legend: { 
             position: "in",
             alignment: "end"
@@ -225,14 +224,12 @@ function drawChart() {
         },
         series: {
             0: {color: "#2BC5EB"}
-        }
-=======
+        },
         legend: { position: "bottom" },
         animation: {"startup": true,
                     "duration": 1000,
                     "easing": "linear"
             }
->>>>>>> e0cf4e0 (adding styling)
     }
     let chart = new google.visualization.LineChart(document.getElementById("chart"))
     chart.draw(data, options)
