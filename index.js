@@ -29,9 +29,7 @@ let insiderChartData = []
 // const api = 'whatever our api is. need to make secret'
 
 function displayCompanies() {
-    while (displaySearch.firstChild) {
-        displaySearch.removeChild(displaySearch.firstChild)
-    }
+    clearDisplaySearch()
     defaultCompanyDisplay.forEach(company => {
         fetch(`https://api.aletheiaapi.com/GetEntity?id=${company}&key=${keys.aletheiaKey}`)
             .then(data => data.json())
@@ -56,6 +54,7 @@ function renderPeopleInCompany(data, clicked) {
         fetch(`https://api.aletheiaapi.com/AffiliatedOwners?id=${companyCik}&key=${keys.aletheiaKey}`)
             .then(people => people.json())
             .then(people => {
+                clearDisplaySearch()
                 renderPeople(people)
                 // console.log(people)
             })
@@ -63,9 +62,6 @@ function renderPeopleInCompany(data, clicked) {
 }
 
 function renderPeople(people) {
-    while (displaySearch.firstChild) {
-        displaySearch.removeChild(displaySearch.firstChild)
-    }
     people.forEach(person => {
         let insider = document.createElement('div')
         insider.className = 'infoContainer'
@@ -78,9 +74,6 @@ function renderPeople(people) {
 function renderInsiderInfo(person, clicked) {
     clicked.addEventListener('click', () => {
         insiderCik = person.Cik
-        while (displaySearch.firstChild) {
-            displaySearch.removeChild(displaySearch.firstChild)
-        }
         // console.log(insiderCik)
         renderInsider()
     })
@@ -93,6 +86,9 @@ function renderInsider() {
             startDate = data[data.length - 1].TransactionDate.slice(0, 10)
             endDate = data[0].TransactionDate.slice(0, 10)
             console.log(startDate, endDate)
+            while (displaySearch.firstChild) {
+                displaySearch.removeChild(displaySearch.firstChild)
+            }
             renderTransactions(data)
         })
         .catch(error => alert('No Transaction Data Available'))
@@ -148,25 +144,22 @@ searchCoForm.addEventListener('submit', (e) => {
     // console.log(companyCik)
 
     getCommonFinancials(companyCik)
-    
+
     e.target.reset()
 })
 
 function getCommonFinancials(Cik) {
     fetch(`https://api.aletheiaapi.com/CommonFinancials?id=${Cik}&period=1&key=${keys.aletheiaKey}`)
         .then(data => data.json())
-        .then(data => renderCommonFinancials(data))
+        .then(data => {
+            clearDisplaySearch()
+            renderCommonFinancials(data)
+        })
 }
 
 function renderCommonFinancials(data) {
-
-    while (displaySearch.firstChild) {
-        displaySearch.removeChild(displaySearch.firstChild)
-    }
-
-    // console.log(data)
     let companyInfoContainer = document.createElement('div')
-    companyInfoContainer.className = 'insiderContainer'
+    companyInfoContainer.className = 'companyInfoContainer'
     let showInsider = document.createElement('button')
     let assets = document.createElement('div')
     let cash = document.createElement('div')
@@ -182,7 +175,7 @@ function renderCommonFinancials(data) {
     equity.className = 'insiderData'
     liabilities.className = 'insiderData'
     operatingIncome.className = 'insiderData'
-    
+
     showInsider.textContent = 'Show Insider'
     assets.textContent = `Assets: ${data.Facts.Assets}`
     cash.textContent = `Cash: ${data.Facts.Cash}`
@@ -209,15 +202,16 @@ function drawChart() {
             viewWindowMode: "pretty"
         },
         explorer: {
-            actions:['dragToZoom', 'rightClickToReset'],
+            actions: ['dragToZoom', 'rightClickToReset'],
             keepInBounds: true
         },
         curveType: "function",
         legend: { position: "bottom" },
-        animation: {"startup": true,
-                    "duration": 1000,
-                    "easing": "linear"
-            }
+        animation: {
+            "startup": true,
+            "duration": 1000,
+            "easing": "linear"
+        }
     }
     let chart = new google.visualization.LineChart(document.getElementById("chart"))
     chart.draw(data, options)
@@ -301,7 +295,7 @@ function drawChartForInsider() {
             viewWindowMode: "pretty"
         },
         explorer: {
-            actions:['dragToZoom', 'rightClickToReset'],
+            actions: ['dragToZoom', 'rightClickToReset'],
             keepInBounds: true
         },
         curveType: "function",
@@ -312,7 +306,7 @@ function drawChartForInsider() {
             "easing": "out"
         },
         series: {
-            0: {color: "#2BC5EB"}
+            0: { color: "#2BC5EB" }
         },
         annotations: {
             boxStyle: {
@@ -503,4 +497,10 @@ searchStock.addEventListener('submit', (e) => {
     e.target.reset()
 
     getStock();
-}) 
+})
+
+function clearDisplaySearch() {
+    while (displaySearch.firstChild) {
+        displaySearch.removeChild(displaySearch.firstChild)
+    }
+}
