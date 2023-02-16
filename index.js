@@ -1,6 +1,6 @@
 google.charts.load("current", { "packages": ["corechart"] });
 // google.charts.setOnLoadCallback(drawChart);
-let searchCo = document.querySelector('#searchCo');
+let searchCoForm = document.querySelector('.searchCoForm');
 let searchStock = document.querySelector("#search_stock");
 let stockChart = document.querySelector('#chart');
 let displaySearch = document.querySelector('#displaySearch');
@@ -38,7 +38,7 @@ function displayCompanies() {
             .then(data => {
                 // console.log(data)
                 let companyContainer = document.createElement('div')
-                companyContainer.className = 'companies'
+                companyContainer.className = 'infoContainer'
                 companyContainer.textContent = data.Name
                 displaySearch.append(companyContainer)
                 renderPeopleInCompany(data, companyContainer)
@@ -68,7 +68,7 @@ function renderPeople(people) {
     }
     people.forEach(person => {
         let insider = document.createElement('div')
-        insider.className = 'insider'
+        insider.className = 'infoContainer'
         insider.textContent = person.Name
         displaySearch.append(insider)
         renderInsiderInfo(person, insider)
@@ -92,6 +92,7 @@ function renderInsider() {
         .then(data => {
             startDate = data[data.length - 1].TransactionDate.slice(0, 10)
             endDate = data[0].TransactionDate.slice(0, 10)
+            console.log(startDate, endDate)
             renderTransactions(data)
         })
         .catch(error => alert('No Transaction Data Available'))
@@ -101,6 +102,7 @@ function renderInsider() {
 function renderTransactions(data) {
     data.forEach(transaction => {
         let transactionContainer = document.createElement('div')
+        transactionContainer.className = 'infoContainer'
         let transactionQuantityContainer = document.createElement('div')
         let transactionQuantityOwnedContainer = document.createElement('div')
         let dateContainer = document.createElement('div')
@@ -139,14 +141,15 @@ function renderTransactions(data) {
 
 
 
-searchCo.addEventListener('submit', (e) => {
+searchCoForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
     companyCik = e.target.company.value
     // console.log(companyCik)
 
     getCommonFinancials(companyCik)
-
+    
+    e.target.reset()
 })
 
 function getCommonFinancials(Cik) {
@@ -162,7 +165,8 @@ function renderCommonFinancials(data) {
     }
 
     // console.log(data)
-
+    let companyInfoContainer = document.createElement('div')
+    companyInfoContainer.className = 'insiderContainer'
     let showInsider = document.createElement('button')
     let assets = document.createElement('div')
     let cash = document.createElement('div')
@@ -170,7 +174,15 @@ function renderCommonFinancials(data) {
     let liabilities = document.createElement('div')
     let operatingIncome = document.createElement('div')
     let revenue = document.createElement('div')
-
+    revenue.className = 'insiderData'
+    showInsider.className = 'insiderData'
+    showInsider.id = 'insider'
+    assets.className = 'insiderData'
+    cash.className = 'insiderData'
+    equity.className = 'insiderData'
+    liabilities.className = 'insiderData'
+    operatingIncome.className = 'insiderData'
+    
     showInsider.textContent = 'Show Insider'
     assets.textContent = `Assets: ${data.Facts.Assets}`
     cash.textContent = `Cash: ${data.Facts.Cash}`
@@ -179,7 +191,8 @@ function renderCommonFinancials(data) {
     operatingIncome.textContent = `Operating Income: ${data.Facts.OperatingIncome}`
     revenue.textContent = `Revenue: ${data.Facts.Revenue}`
 
-    displaySearch.append(assets, cash, equity, liabilities, operatingIncome, revenue, showInsider)
+    companyInfoContainer.append(assets, cash, equity, liabilities, operatingIncome, revenue, showInsider)
+    displaySearch.append(companyInfoContainer)
     showInsider.addEventListener('click', () => {
         defaultCompanyDisplay = []
         defaultCompanyDisplay.push(`${companyCik}`)
@@ -200,6 +213,7 @@ function drawChart() {
             keepInBounds: true
         },
         curveType: "function",
+<<<<<<< HEAD
         legend: { 
             position: "in",
             alignment: "end"
@@ -212,6 +226,13 @@ function drawChart() {
         series: {
             0: {color: "#2BC5EB"}
         }
+=======
+        legend: { position: "bottom" },
+        animation: {"startup": true,
+                    "duration": 1000,
+                    "easing": "linear"
+            }
+>>>>>>> e0cf4e0 (adding styling)
     }
     let chart = new google.visualization.LineChart(document.getElementById("chart"))
     chart.draw(data, options)
@@ -350,7 +371,7 @@ function getInsiderStockData() {
     fetch(`https://api.polygon.io/v2/aggs/ticker/${companyTicker}/range/1/${timespan}/${startDate}/${endDate}?adjusted=true&sort=asc&limit=50000&apiKey=${keys.aggregateKey}`)
         .then(data => data.json())
         .then(data => {
-            // console.log(data)
+            // let newStartDate = endDate.getMonth() - data.results.length
             data.results.forEach(res => {
                 populateInsiderChartData(res)
                 decideIncrement(startDate1)
@@ -493,5 +514,8 @@ searchStock.addEventListener('submit', (e) => {
     e.preventDefault();
 
     companyTicker = e.target.ticker_company.value
-    getStock()
+
+    e.target.reset()
+
+    getStock();
 }) 

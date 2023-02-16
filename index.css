@@ -1,31 +1,43 @@
 body {
-    height: 100vh;
+    height: 160vh;
     background: linear-gradient(0deg, #0c0a1c, #1b1d42);
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    overflow-x: hidden;
 }
 
 #searchStock {
-    width: 30vh;
-    height: 10vh;
+    width: flex;
+    height: flex;
     flex-direction: column;
     align-items: center;
-    background-color: aqua;
     text-align: center;
-    vertical-align: middle;
+    margin-top: 5vh;
+    margin-bottom: 5vh;
+    background-color: rgba(255,255,255, 0.1);
+	color: white;
+	border-color: white;
+	padding: 5px;
+	font: inherit;
+	outline: inherit;
+    margin-top: 5vh;
+    margin-left: 5vh;
+}
+
+#searchStock::placeholder {
+    color: white
 }
 
 #search_stock {
     width: 30vh;
-    margin:auto
+    margin:auto;
 }
 
 #chart {
-    height: 40vh;
+    height: 50vh;
     flex-direction: column;
     align-items: center;
-    background-color: red;
     border-radius: 10px;
     margin-bottom: 30px;
     margin: auto;
@@ -40,14 +52,73 @@ body {
     margin: auto
 }
 
+#searchCo {
+    width: 20vh;
+    background: rgba(255,255,255, 0.1);
+	color: white;
+	border-color: white;
+	padding: 5px;
+	font: inherit;
+	outline: inherit;
+    margin-top: 5vh;
+}
+
+.searchCoForm {
+    width: 20vh;
+	color: white;
+	border-color: white;
+	padding: 5px;
+	font: inherit;
+	outline: inherit;
+    margin-top: 5vh;
+}
+
+#searchCo::placeholder {
+    color: white
+}
+
 #displaySearch {
-    background-color: green;
-    height: 30vh;
+    height: flex;
     padding-top:  30px;
     border-radius: 10px;
     margin: auto;
+    display: flex;
+    flex-direction: row;
+    overflow: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#insider {
+    background: none;
+	color: white;
+	border-color: white;
+	padding: 5;
+	font: inherit;
+	cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.insiderData {
+    flex-direction: column;
+    justify-content: center;
+}
+
+.insiderContainer {
+    flex-direction: column;
+    color: white;
     text-align: center;
 }
 
-/* .companies {
-} */
+.infoContainer {
+    color: white;
+    transition: all .2s ease-in-out;
+    margin: 5vh;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.infoContainer:hover {
+    transform: scale(1.2);
+}
