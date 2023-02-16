@@ -204,6 +204,14 @@ function drawChart() {
     let data = google.visualization.arrayToDataTable(chartData);
     let options = {
         title: `${companyTicker}`,
+        hAxis: {
+            slantedText: true,
+            viewWindowMode: "pretty"
+        },
+        explorer: {
+            actions:['dragToZoom', 'rightClickToReset'],
+            keepInBounds: true
+        },
         curveType: "function",
         legend: { position: "bottom" },
         animation: {"startup": true,
@@ -288,12 +296,23 @@ function drawChartForInsider() {
     data.addRows(insiderChartData)
     let options = {
         title: `${companyTicker}`,
+        hAxis: {
+            slantedText: true,
+            viewWindowMode: "pretty"
+        },
+        explorer: {
+            actions:['dragToZoom', 'rightClickToReset'],
+            keepInBounds: true
+        },
         curveType: "function",
-        legend: { position: "bottom" },
+        legend: { position: "in" },
         animation: {
             "startup": true,
             "duration": 1000,
-            "easing": "linear"
+            "easing": "out"
+        },
+        series: {
+            0: {color: "#2BC5EB"}
         },
         annotations: {
             boxStyle: {
