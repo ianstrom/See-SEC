@@ -5,6 +5,7 @@ body {
     align-items: center;
     flex-direction: column;
     overflow-x: hidden;
+    position: relative;
 }
 
 #searchStock {
@@ -87,6 +88,7 @@ body {
     overflow: auto;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
 }
 
 #insider {

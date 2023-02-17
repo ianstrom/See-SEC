@@ -33,7 +33,9 @@ function displayCompanies() {
                 companyContainer.textContent = data.Name
                 displaySearch.append(companyContainer)
                 renderPeopleInCompany(data, companyContainer)
+                //Loads FAANG companies and displays them in the Display Search Container uses names provided from the API call to change the text content
             })
+            .catch(error => alert('Company Is Not Monitored'))
     })
 }
 
@@ -48,7 +50,9 @@ function renderPeopleInCompany(data, clicked) {
             .then(people => {
                 clearDisplaySearch()
                 renderPeople(people)
+                //Adds an event listener to the company container then when clicked, gets all of that afilliated share holders of the company that is clicked then clears the display search container.
             })
+            .catch(error => alert('No Affiliated Share Holders Monitored'))
     })
 }
 
@@ -59,6 +63,7 @@ function renderPeople(people) {
         insider.textContent = person.Name
         displaySearch.append(insider)
         renderInsiderInfo(person, insider)
+        //Displays all affiliated owners in the display search container
     })
 }
 
@@ -66,6 +71,7 @@ function renderInsiderInfo(person, clicked) {
     clicked.addEventListener('click', () => {
         insiderCik = person.Cik
         renderInsider()
+        //Adds an event listener on the insider container then when clicked, assigns the insiderCik to the affiliated owners Cik
     })
 }
 
@@ -75,12 +81,11 @@ function renderInsider() {
         .then(data => {
             startDate = data[data.length - 1].TransactionDate.slice(0, 10)
             endDate = data[0].TransactionDate.slice(0, 10)
-            while (displaySearch.firstChild) {
-                displaySearch.removeChild(displaySearch.firstChild)
-            }
+            clearDisplaySearch()
             renderTransactions(data)
         })
-        .catch(error => console.log(error))
+        .catch(error => alert('No Recent Transactions Available'))
+    //When called, assigns dates to start date and end date accoding to the first and last index dates
 }
 
 function getStockChartDates(data) {
@@ -98,6 +103,8 @@ function getStockChartDates(data) {
             transactionDateArray.shift()
         }
     })
+    //Takes in the display companies data, copies it into a new array, then reverses the array, then finds the index where the transaction date is more recent than two years ago, then removes everything before that index and assigns the remaining data points in the
+    //array and assigns it to dataSplitAndReversed variable then if the array only has one item, it calls fetchForOneDay, and anything greater than one passes all the dates from each item to a new array then called getForMultipleDays and then removes the first item from the array
 }
 
 function renderTransactions(data) {
@@ -115,6 +122,7 @@ function renderTransactions(data) {
         displaySearch.append(transactionContainer)
     })
     getStockChartDates(data)
+    //When called, displays all transaction data in the display search container.
 }
 
 searchCoForm.addEventListener('submit', (e) => {
@@ -125,6 +133,7 @@ searchCoForm.addEventListener('submit', (e) => {
     getCommonFinancials(companyCik)
 
     e.target.reset()
+    //Adds an event listener to the search company container that when submitted, calls get common financials
 })
 
 function getCommonFinancials(Cik) {
@@ -134,6 +143,7 @@ function getCommonFinancials(Cik) {
             clearDisplaySearch()
             renderCommonFinancials(data)
         })
+    //When called, clears the display search container
 }
 
 function renderCommonFinancials(data) {
@@ -170,6 +180,7 @@ function renderCommonFinancials(data) {
         defaultCompanyDisplay.push(`${companyCik}`)
         displayCompanies()
     })
+    //When called, displays company information in the display search container and adds an even listener to show insider button that displays the company that you searched 
 }
 
 function drawChart() {
@@ -185,8 +196,9 @@ function drawChart() {
             keepInBounds: true
         },
         curveType: "function",
-        legend: { position: "in",
-                alignment: "end"
+        legend: {
+            position: "in",
+            alignment: "end"
         },
         animation: {
             "startup": true,
@@ -196,6 +208,7 @@ function drawChart() {
     }
     let chart = new google.visualization.LineChart(document.getElementById("chart"))
     chart.draw(data, options)
+    //when called draws chart
 }
 
 function getStock() {
@@ -226,6 +239,7 @@ function getStock() {
             populateChartData(week, oneYearAgo)
             drawChart()
         }))
+        //When called, gets the current date and also the date from one year ago and correctly formats it, passes those dates into a fetch request to get stock data from one year ago until now and calls draw chart
 }
 
 getStock()
@@ -236,6 +250,7 @@ function populateChartData(week, date) {
     chartDataNestedArray.push(newDate)
     chartDataNestedArray.push(week.c)
     chartData.push(chartDataNestedArray)
+    //When called, formats all the data on the stock chart in the api's desired format
 }
 
 function addOneWeek(date) {
@@ -254,13 +269,12 @@ function addOneWeek(date) {
 
     date = `${year}-${month}-${day}`
     return date
+    //when called, increments the start date by 7 days
 }
 
 
 function drawChartForInsider() {
-    while (stockChart.firstChild) {
-        stockChart.removeChild(stockChart.firstChild)
-    }
+    clearDisplaySearch()
     let data = new google.visualization.DataTable()
     data.addColumn("string", "Date")
     data.addColumn("number", "Closing Price")
@@ -278,8 +292,9 @@ function drawChartForInsider() {
             keepInBounds: true
         },
         curveType: "function",
-        legend: { position: "in",
-                alignment: "end"
+        legend: {
+            position: "in",
+            alignment: "end"
         },
         animation: {
             "startup": true,
@@ -311,6 +326,7 @@ function drawChartForInsider() {
     }
     let chart = new google.visualization.LineChart(document.getElementById("chart"))
     chart.draw(data, options)
+    //Draws a chart with more data being passed in
 }
 
 function getWindowTimeSpan(currentDate, date) {
@@ -323,6 +339,7 @@ function getWindowTimeSpan(currentDate, date) {
     } else if (currentDate.getDate() - date.getDate() <= 7) {
         timespan = 'hour'
     }
+    //Compares the start date to the end date and decides the distance in dates between each stock price
 }
 
 function populateInsiderChartData(res) {
@@ -339,6 +356,7 @@ function populateInsiderChartData(res) {
         insiderChartDataNestedArray.push('')
     }
     insiderChartData.push(insiderChartDataNestedArray)
+    //When called, formats all the data on the stock chart in the api's desired format
 }
 
 function formatDate(date3) {
@@ -357,6 +375,7 @@ function formatDate(date3) {
 
     let currentDate = `${year}-${month}-${day}`
     return currentDate;
+    //Creates a variable that is assigned the current date in YYYY-MM-DD format
 }
 
 
@@ -368,12 +387,14 @@ searchStock.addEventListener('submit', (e) => {
     e.target.reset()
 
     getStock();
+    //Adds an event listener to the search stock container that when submitted, calls gets the desired stock data for the past year and displays it on the chart
 })
 
 function clearDisplaySearch() {
     while (displaySearch.firstChild) {
         displaySearch.removeChild(displaySearch.firstChild)
     }
+    //Clears the display search container
 }
 
 function fetchForOneDay(transaction) {
@@ -390,7 +411,7 @@ function fetchForOneDay(transaction) {
                 drawChartForInsider()
             })
         })
-
+    //When called, pushes the amount of shares transferred from the transaction to the transaction quantity array to be accessed later and also assigns start date to the transaction date and the end date to the start date + 1 day, then populates the chart with that information
 }
 
 function getforMultipleDays(transaction) {
@@ -405,6 +426,7 @@ function getforMultipleDays(transaction) {
             drawChartForInsider()
         }
         )
+        //When called, pushes the amount of shares transferred from each transaction to the transaction quanity array to be accesses later, then calls the api for every transaction date and populates the chart with the stock data
 }
 
 function populateInsiderChartData2(res) {
@@ -423,4 +445,5 @@ function populateInsiderChartData2(res) {
         insiderChartDataNestedArray.push('')
     }
     insiderChartData.push(insiderChartDataNestedArray)
+    //When called, formats all the data in the api's desired format.
 }
