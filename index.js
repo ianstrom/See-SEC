@@ -1,5 +1,4 @@
 google.charts.load("current", { "packages": ["corechart"] });
-// google.charts.setOnLoadCallback(drawChart);
 let searchCoForm = document.querySelector('.searchCoForm');
 let searchStock = document.querySelector("#search_stock");
 let stockChart = document.querySelector('#chart');
@@ -12,21 +11,16 @@ let transactionDate;
 let startDate;
 let endDate;
 let transactionDateArray = []
-let stockClosingPrices = []
 let chartData = [["Date", "Closing Price"]]
-let incrementDate;
 let currentDate
 let oneYearAgo
 let timespan;
-let startDate1
 let transactionQuanitityArray = []
 let insiderChartData = []
-// let date
-// let month
-// let day
-// let year
-
-// const api = 'whatever our api is. need to make secret'
+let twoYearsAgo
+let splicingData
+let dataSplitAndReversed
+let startDatePiss
 
 function displayCompanies() {
     clearDisplaySearch()
@@ -34,7 +28,6 @@ function displayCompanies() {
         fetch(`https://api.aletheiaapi.com/GetEntity?id=${company}&key=${keys.aletheiaKey}`)
             .then(data => data.json())
             .then(data => {
-                // console.log(data)
                 let companyContainer = document.createElement('div')
                 companyContainer.className = 'infoContainer'
                 companyContainer.textContent = data.Name
@@ -50,13 +43,11 @@ function renderPeopleInCompany(data, clicked) {
     clicked.addEventListener('click', () => {
         companyCik = data.Cik
         companyTicker = data.TradingSymbol
-        // console.log(companyCik)
         fetch(`https://api.aletheiaapi.com/AffiliatedOwners?id=${companyCik}&key=${keys.aletheiaKey}`)
             .then(people => people.json())
             .then(people => {
                 clearDisplaySearch()
                 renderPeople(people)
-                // console.log(people)
             })
     })
 }
@@ -74,7 +65,6 @@ function renderPeople(people) {
 function renderInsiderInfo(person, clicked) {
     clicked.addEventListener('click', () => {
         insiderCik = person.Cik
-        // console.log(insiderCik)
         renderInsider()
     })
 }
@@ -85,15 +75,30 @@ function renderInsider() {
         .then(data => {
             startDate = data[data.length - 1].TransactionDate.slice(0, 10)
             endDate = data[0].TransactionDate.slice(0, 10)
-            console.log(startDate, endDate)
             while (displaySearch.firstChild) {
                 displaySearch.removeChild(displaySearch.firstChild)
             }
             renderTransactions(data)
         })
-        .catch(error => alert('No Transaction Data Available'))
+        .catch(error => console.log(error))
 }
 
+function getStockChartDates(data) {
+    splicingData = [...data]
+    splicingData = splicingData.reverse()
+    let twoYearsAgoJs = new Date(twoYearsAgo)
+    const index = splicingData.findIndex(transaction => new Date(transaction.TransactionDate) >= twoYearsAgoJs);
+    dataSplitAndReversed = splicingData.slice(index);
+    dataSplitAndReversed.forEach(transaction => {
+        if (transaction.length == 1) {
+            fetchForOneDay(transaction)
+        } else {
+            transactionDateArray.push(transaction.TransactionDate.slice(0, 10))
+            getforMultipleDays(transaction)
+            transactionDateArray.shift()
+        }
+    })
+}
 
 function renderTransactions(data) {
     data.forEach(transaction => {
@@ -103,45 +108,19 @@ function renderTransactions(data) {
         let transactionQuantityOwnedContainer = document.createElement('div')
         let dateContainer = document.createElement('div')
         transactionDate = transaction.TransactionDate.slice(0, 10)
-        transactionDateArray.push(transactionDate)
-        // console.log(new Date(transactionDateArray[0]).getMonth())
-        transactionQuanitityArray.push(transaction.Quantity)
-        // console.log(transactionQuanitityArray)
         transactionQuantityContainer.textContent = `Shares transferred: ${transaction.Quantity}`
         transactionQuantityOwnedContainer.textContent = `Shares after transaction: ${transaction.QuantityOwnedFollowingTransaction}`
         dateContainer.textContent = `Transaction date ${transactionDate}`
         transactionContainer.append(transactionQuantityContainer, transactionQuantityOwnedContainer, dateContainer)
         displaySearch.append(transactionContainer)
     })
-    // getStockData()
-    getInsiderStockData()
+    getStockChartDates(data)
 }
-
-// function getStockData() {
-//     fetch(`https://api.polygon.io/v2/aggs/ticker/${companyTicker}/range/1/hour/${startDate}/${endDate}?adjusted=true&sort=asc&limit=50000&apiKey=${keys.aggregateKey}`)
-//         .then(data => data.json())
-//         .then(data => {
-//             console.log(data)
-//             getStockClosingValues(data)
-//         })
-//         .catch(error => alert('No Stock Data Available'))
-//     }
-
-// function getStockClosingValues(data) {
-//     console.log(data)
-//     data.results.forEach(closingPrice => {
-//         stockClosingPrices.push(closingPrice.c)
-//     })
-//     // console.log(stockClosingPrices)
-// }
-
-
 
 searchCoForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
     companyCik = e.target.company.value
-    // console.log(companyCik)
 
     getCommonFinancials(companyCik)
 
@@ -206,7 +185,9 @@ function drawChart() {
             keepInBounds: true
         },
         curveType: "function",
-        legend: { position: "bottom" },
+        legend: { position: "in",
+                alignment: "end"
+        },
         animation: {
             "startup": true,
             "duration": 1000,
@@ -221,6 +202,7 @@ function getStock() {
     let date = new Date();
     let year = date.getFullYear()
     let whatIsAYearAgo = (date.getFullYear()) - 1
+    let whatIsTwoYearsAgo = (date.getFullYear()) - 2
     let month = parseInt((date.getMonth()) + 1).toString()
     let day = date.getDate()
 
@@ -235,10 +217,7 @@ function getStock() {
 
     let currentDate = `${year}-${month}-${day}`
     let oneYearAgo = `${whatIsAYearAgo}-${month}-${day}`
-    // let currentDate1 = new Date(currentDate)
-    // let oneYearAgo1 = new Date(oneYearAgo)
-
-    // getWindowTimeSpan(currentDate1, oneYearAgo1)
+    twoYearsAgo = `${whatIsTwoYearsAgo}-${month}-${day}`
 
     fetch(`https://api.polygon.io/v2/aggs/ticker/${companyTicker}/range/1/week/${oneYearAgo}/${currentDate}?adjusted=true&sort=asc&limit=50000&apiKey=${keys.aggregateKey}`)
         .then(data => data.json())
@@ -299,7 +278,9 @@ function drawChartForInsider() {
             keepInBounds: true
         },
         curveType: "function",
-        legend: { position: "in" },
+        legend: { position: "in",
+                alignment: "end"
+        },
         animation: {
             "startup": true,
             "duration": 1000,
@@ -309,30 +290,20 @@ function drawChartForInsider() {
             0: { color: "#2BC5EB" }
         },
         annotations: {
+            textStyle: {
+                color: 'black'
+            },
             boxStyle: {
-                // Color of the box outline.
-                stroke: '#888',
-                // Thickness of the box outline.
-                strokeWidth: 1,
-                // x-radius of the corner curvature.
-                rx: 10,
-                // y-radius of the corner curvature.
-                ry: 10,
-                // Attributes for linear gradient fill.
+
                 gradient: {
-                    // Start color for gradient.
-                    color1: '#FBF6A7',
-                    // Finish color for gradient.
-                    color2: '#33B679',
-                    // Where on the boundary to start and
-                    // end the color1/color2 gradient,
-                    // relative to the upper left corner
-                    // of the boundary.
+
+                    color1: '#FFFFFF',
+
+                    color2: '#FFFFFF',
+
                     x1: '0%', y1: '0%',
                     x2: '100%', y2: '100%',
-                    // If true, the boundary for x1,
-                    // y1, x2, and y2 is the box. If
-                    // false, it's the entire chart.
+
                     useObjectBoundingBoxUnits: true
                 }
             }
@@ -340,23 +311,6 @@ function drawChartForInsider() {
     }
     let chart = new google.visualization.LineChart(document.getElementById("chart"))
     chart.draw(data, options)
-}
-
-function getInsiderStockData() {
-    let endDate1 = new Date(endDate)
-    startDate1 = new Date(startDate)
-    getWindowTimeSpan(endDate1, startDate1)
-    // console.log(startDate1)
-    fetch(`https://api.polygon.io/v2/aggs/ticker/${companyTicker}/range/1/${timespan}/${startDate}/${endDate}?adjusted=true&sort=asc&limit=50000&apiKey=${keys.aggregateKey}`)
-        .then(data => data.json())
-        .then(data => {
-            // let newStartDate = endDate.getMonth() - data.results.length
-            data.results.forEach(res => {
-                populateInsiderChartData(res)
-                decideIncrement(startDate1)
-                drawChartForInsider()
-            })
-        })
 }
 
 function getWindowTimeSpan(currentDate, date) {
@@ -371,102 +325,19 @@ function getWindowTimeSpan(currentDate, date) {
     }
 }
 
-function addOneMonth(date) {
-    date.setDate(date.getDate() + 30);
-    let month = parseInt((date.getMonth()) + 1).toString();
-    let day = date.getDate();
-    let year = date.getFullYear();
-
-    if (month.length === 1) {
-        month = '0' + month
-    }
-
-    if (day.length === 1) {
-        day = '0' + day
-    }
-
-    date = `${year}-${month}-${day}`
-    return date
-}
-
-function addOneDay(date) {
-    date.setDate(date.getDate() + 1);
-    let month = parseInt((date.getMonth()) + 1).toString();
-    let day = date.getDate();
-    let year = date.getFullYear();
-
-    if (month.length === 1) {
-        month = '0' + month
-    }
-
-    if (day.length === 1) {
-        day = '0' + day
-    }
-
-    date = `${year}-${month}-${day}`
-    return date
-}
-
-function decideIncrement(date) {
-    if (timespan === 'month') {
-        addOneMonth(date)
-    } else if (timespan === 'week') {
-        addOneWeek(date)
-    } else if (timespan === 'day') {
-        addOneDay(date)
-    }
-}
-
-function decideComparison() {
-    if (timespan === 'month') {
-        return compareMonths()
-    } else if (timespan === 'week') {
-        return compareWeeks()
-    } else if (timespan === 'day') {
-        return compareDays()
-    } else if (timespan === 'hour') {
-        return compareDays()
-    }
-    transactionDateArray.shift()
-    transactionQuanitityArray.shift()
-}
-
-function compareMonths() {
-    if (startDate1.getMonth() === new Date(transactionDateArray[0]).getMonth()) {
-        transactionDateArray.shift();
-        return (transactionQuanitityArray[0]).toString()
-    } else {
-        return ''
-    }
-}
-
-function compareWeeks() {
-    if (startDate1.getDate() - new Date(transactionDateArray[0]).getDate() <= 7 && startDate1.getMonth() === new Date(transactionDateArray[0]).getMonth()) {
-        transactionDateArray.shift()
-        return (transactionQuanitityArray[0]).toString()
-    } else {
-        return ''
-    }
-}
-
-function compareDays() {
-    if (startDate1 === new Date(transactionDateArray[0])) {
-        transactionDateArray.shift()
-        return (transactionQuanitityArray[0]).toString()
-    } else {
-        return ''
-    }
-}
-
 function populateInsiderChartData(res) {
     let insiderChartDataNestedArray = []
-    let newDate = formatDate(startDate1)
-    insiderChartDataNestedArray.push(newDate)
+    insiderChartDataNestedArray.push(startDate)
     insiderChartDataNestedArray.push(res.c)
-    insiderChartDataNestedArray.push(".")
-    insiderChartDataNestedArray.push(decideComparison())
-    // console.log(decideComparison())
-    // console.log(insiderChartDataNestedArray)
+    let myIcon = `$`
+    if (transactionQuanitityArray.length > 0) {
+        insiderChartDataNestedArray.push(myIcon)
+        insiderChartDataNestedArray.push(`Shares Transferred: ${transactionQuanitityArray[0].toString()}`)
+        transactionQuanitityArray.shift()
+    } else {
+        insiderChartDataNestedArray.push("")
+        insiderChartDataNestedArray.push('')
+    }
     insiderChartData.push(insiderChartDataNestedArray)
 }
 
@@ -503,4 +374,53 @@ function clearDisplaySearch() {
     while (displaySearch.firstChild) {
         displaySearch.removeChild(displaySearch.firstChild)
     }
+}
+
+function fetchForOneDay(transaction) {
+    transactionQuanitityArray.push(transaction.Quantity)
+    startDate = transaction.TransactionDate.slice(0, 10)
+    startDatePiss = new Date(startDate)
+    endDate = startDatePiss.setDate(startDatePiss.getDate() + 1)
+
+    fetch(`https://api.polygon.io/v2/aggs/ticker/${companyTicker}/range/1/hour/${startDate}/${endDate}?adjusted=true&sort=asc&limit=50000&apiKey=${keys.aggregateKey}`)
+        .then(data => data.json())
+        .then(data => {
+            data.results.forEach(res => {
+                populateInsiderChartData(res)
+                drawChartForInsider()
+            })
+        })
+
+}
+
+function getforMultipleDays(transaction) {
+    transactionQuanitityArray.push(transaction.Quantity)
+    startDate = transaction.TransactionDate.slice(0, 10)
+
+    fetch(`https://api.polygon.io/v1/open-close/${companyTicker}/${transactionDateArray[0]}?adjusted=true&apiKey=${keys.aggregateKey}`)
+        .then(data => data.json())
+        .then(data => {
+            console.log(data)
+            populateInsiderChartData2(data)
+            drawChartForInsider()
+        }
+        )
+}
+
+function populateInsiderChartData2(res) {
+    let insiderChartDataNestedArray = []
+    insiderChartDataNestedArray.push(res.from)
+    insiderChartDataNestedArray.push(res.close)
+
+    let myIcon = `$`
+
+    if (transactionQuanitityArray.length > 0) {
+        insiderChartDataNestedArray.push(myIcon)
+        insiderChartDataNestedArray.push(`Shares Transferred: ${transactionQuanitityArray[0].toString()}`)
+        transactionQuanitityArray.shift()
+    } else {
+        insiderChartDataNestedArray.push("")
+        insiderChartDataNestedArray.push('')
+    }
+    insiderChartData.push(insiderChartDataNestedArray)
 }

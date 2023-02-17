@@ -114,6 +114,8 @@ body {
     overflow: hidden;
     cursor: pointer;
     border-radius: 5px;
+    transition: all .4s ease-in;
+    transition: all .5s ease-out
 }
 
 .companyInfoContainer {
@@ -149,5 +151,5 @@ body {
 }
 
 .infoContainer:hover {
-    transform: scale(1.2);
+    transform: scale(1.25);
 }
